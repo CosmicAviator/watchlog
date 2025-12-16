@@ -142,4 +142,9 @@ export interface ThemeContent {
     statsTitle: string
     filterLabel: string
     footerText: string
+    myLogs: string
+    fleetFeed: string
+    friendsHeader: string
+    addFriend: string
 }
+
