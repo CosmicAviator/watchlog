@@ -10,12 +10,15 @@ import MissionCard from './MissionCard'
 import MissionForm from './MissionForm'
 import StatsDashboard from './StatsDashboard'
 import EditModal from './EditModal'
+import ThemeSelector from './ThemeSelector'
 
 export default function Dashboard() {
     const [user, setUser] = useState<User | null>(null)
     const [entries, setEntries] = useState<Entry[]>([])
     const [profile, setProfile] = useState<Profile | null>(null)
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [currentTheme, setCurrentTheme] = useState('cosmos')
 
     const [filter, setFilter] = useState('All')
     const [sortBy, setSortBy] = useState('newest')
@@ -38,28 +41,40 @@ export default function Dashboard() {
             setUser(user)
 
             // Fetch entries
-            const { data: userEntries } = await supabase
+            const { data: userEntries, error: entriesError } = await supabase
                 .from('entries')
                 .select('*')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
             
+            if (entriesError) console.error("Error fetching entries:", entriesError)
             if (userEntries) setEntries(userEntries)
 
             // Fetch profile
-            const { data: userProfile } = await supabase
+            const { data: userProfile, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
                 .single()
             
-            if (userProfile) setProfile(userProfile)
+            if (userProfile) {
+                setProfile(userProfile)
+                if (userProfile.theme_id) {
+                    setCurrentTheme(userProfile.theme_id)
+                    document.documentElement.setAttribute('data-theme', userProfile.theme_id)
+                }
+            }
             
             setLoading(false)
         }
 
         initDashboard()
     }, [router, supabase])
+
+    const handleThemeChange = (newTheme: string) => {
+        setCurrentTheme(newTheme)
+        document.documentElement.setAttribute('data-theme', newTheme)
+    }
 
     async function handleLogout() {
         await supabase.auth.signOut()
@@ -68,15 +83,24 @@ export default function Dashboard() {
 
     async function handleAddEntry(newEntry: Omit<Entry, 'id' | 'user_id' | 'created_at'>) {
         if (!user) return
+        setError(null)
 
-        const { data, error } = await supabase
-            .from('entries')
-            .insert({ ...newEntry, user_id: user.id })
-            .select()
-            .single()
+        try {
+            const { data, error } = await supabase
+                .from('entries')
+                .insert({ ...newEntry, user_id: user.id })
+                .select()
+                .single()
 
-        if (!error && data) {
-            setEntries([data, ...entries])
+            if (error) {
+                console.error("Insert error:", error)
+                setError("FAILED TO ADD: " + error.message + " (" + error.code + ")")
+            } else if (data) {
+                setEntries([data, ...entries])
+            }
+        } catch (err: any) {
+            console.error("Unexpected error:", err)
+            setError(err.message || "Failed to add entry")
         }
     }
 
@@ -89,10 +113,14 @@ export default function Dashboard() {
         if (!error) {
             setEntries(entries.map(e => e.id === id ? { ...e, ...updates } : e))
             setEditingEntry(null)
+        } else {
+            setError(error.message)
         }
     }
 
     async function handleDeleteEntry(id: string) {
+        if (!confirm("Are you sure you want to delete this mission log?")) return
+
         const { error } = await supabase
             .from('entries')
             .delete()
@@ -100,6 +128,8 @@ export default function Dashboard() {
 
         if (!error) {
             setEntries(entries.filter(e => e.id !== id))
+        } else {
+            setError(error.message)
         }
     }
 
@@ -143,13 +173,13 @@ export default function Dashboard() {
             {/* Header */}
             <header className="border-b border-grid-line bg-void-black/80 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                    {/* Logo */}
+                    {/* Logo & Theme Info */}
                     <div className="flex items-center gap-3">
                         <div className="w-2 h-8 bg-phosphor-gold rounded-sm shadow-[0_0_10px_rgba(201,162,39,0.5)]" />
                         <div>
                             <h1 className="text-xl font-bold font-display">WATCHLOG</h1>
                             <p className="font-mono text-[10px] text-telemetry-gray uppercase tracking-[0.2em]">
-                                Flight Log System
+                                System: {currentTheme}
                             </p>
                         </div>
                     </div>
@@ -212,9 +242,21 @@ export default function Dashboard() {
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-                {/* Left Column: Form */}
+                {/* Left Column: Form & Settings */}
                 <div className="space-y-6">
+                    {error && (
+                        <div className="bg-alert-red/20 border border-alert-red text-alert-red p-3 rounded text-sm break-words">
+                            ERROR: {error}
+                        </div>
+                    )}
+                    
                     <MissionForm onSubmit={handleAddEntry} />
+                    
+                    <ThemeSelector 
+                        currentTheme={currentTheme}
+                        onThemeChange={handleThemeChange}
+                        user_id={user.id}
+                    />
                 </div>
 
                 {/* Right Column: Stats + Grid */}
