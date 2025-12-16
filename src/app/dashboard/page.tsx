@@ -1,35 +1,5 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase-server'
 import Dashboard from '@/components/Dashboard'
 
-export default async function DashboardPage() {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        redirect('/auth/login')
-    }
-
-    // Fetch user's entries
-    const { data: entries } = await supabase
-        .from('entries')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-
-    // Fetch user's profile
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-    return (
-        <Dashboard
-            user={user}
-            entries={entries || []}
-            profile={profile}
-        />
-    )
+export default function DashboardPage() {
+    return <Dashboard />
 }
