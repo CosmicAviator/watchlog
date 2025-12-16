@@ -10,6 +10,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
+    /* DEFAULT: COSMOS THEME */
     --void-black: #0a0a0f;
     --console-dark: #13131a;
     --grid-line: #252532;
@@ -21,6 +22,55 @@
     --observatory-teal: #4a9a8c;
     --status-green: #5d8a66;
     --alert-red: #c45c5c;
+    --border-subtle: rgba(255, 255, 255, 0.04);
+    --border-hover: rgba(201, 162, 39, 0.3);
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme='art_deco'] {
+    --void-black: #1a1a1a;
+    --console-dark: #242424;
+    --grid-line: #3d3d3d;
+    --telemetry-gray: #a0a0a0;
+    --data-white: #f0e6d2;
+    --phosphor-gold: #d4af37;
+    --phosphor-gold-dim: rgba(212, 175, 55, 0.15);
+    --phosphor-gold-glow: rgba(212, 175, 55, 0.4);
+    --observatory-teal: #378b8b;
+    --status-green: #4f7a58;
+    --alert-red: #a84545;
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+[data-theme='sakura'] {
+    --void-black: #fff0f5;
+    --console-dark: #fff5f8;
+    --grid-line: #ffdee8;
+    --telemetry-gray: #8c7a80;
+    --data-white: #4a4a4a;
+    --phosphor-gold: #ff69b4;
+    --phosphor-gold-dim: rgba(255, 105, 180, 0.1);
+    --phosphor-gold-glow: rgba(255, 105, 180, 0.3);
+    --observatory-teal: #69b4ff;
+    --status-green: #6bc278;
+    --alert-red: #e06c75;
+}
+
+[data-theme='neural'] {
+    --void-black: #050510;
+    --console-dark: #0b0b1a;
+    --grid-line: #1a1a3a;
+    --telemetry-gray: #5a5a8c;
+    --data-white: #e0e0ff;
+    --phosphor-gold: #00f3ff;
+    --phosphor-gold-dim: rgba(0, 243, 255, 0.15);
+    --phosphor-gold-glow: rgba(0, 243, 255, 0.5);
+    --observatory-teal: #b026ff;
+    --status-green: #00ff9d;
+    --alert-red: #ff2a6d;
 }
 
 * {
@@ -37,13 +87,8 @@ body {
 }
 
 /* Typography */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-family: 'Space Grotesk', sans-serif;
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
     font-weight: 600;
     letter-spacing: -0.02em;
 }
@@ -81,10 +126,9 @@ h6 {
 }
 
 .btn-primary:hover {
-    background: #d4b84a;
+    filter: brightness(1.1);
     box-shadow: 0 0 20px var(--phosphor-gold-glow);
 }
-
 /* Button Ghost */
 .btn-ghost {
     background: transparent;
@@ -140,15 +184,8 @@ h6 {
 }
 
 @keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 /* Mission Card */
@@ -178,7 +215,5 @@ h6 {
 }
 
 @keyframes orbit {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
