@@ -12,6 +12,7 @@ import MissionForm from './MissionForm'
 import StatsDashboard from './StatsDashboard'
 import EditModal from './EditModal'
 import ImportModal from './ImportModal'
+import ActivityFeed from './friends/ActivityFeed'
 
 const THEMES = [
     { id: 'cosmos', name: 'Cosmos Observatory' },
@@ -33,6 +34,7 @@ export default function Dashboard() {
     const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
     const [showStats, setShowStats] = useState(true)
     const [showImport, setShowImport] = useState(false)
+    const [viewMode, setViewMode] = useState<'mine' | 'fleet'>('mine')
     const router = useRouter()
     const supabase = createClient()
 
@@ -43,6 +45,7 @@ export default function Dashboard() {
     useEffect(() => {
         const savedTheme = localStorage.getItem('watchlog-theme') || 'cosmos'
         setCurrentTheme(savedTheme)
+        // Attribute is already handled by layout.tsx script, but good to keep sync
         document.documentElement.setAttribute('data-theme', savedTheme)
     }, [])
 
@@ -239,6 +242,22 @@ export default function Dashboard() {
 
                     {/* Stats Bar */}
                     <div className="hidden md:flex items-center gap-4 font-mono text-xs">
+                        {/* View Toggle - UPDATED WITH DYNAMIC TEXT */}
+                        <div className="flex bg-void-black/50 rounded-lg p-1 border border-grid-line">
+                            <button 
+                                onClick={() => setViewMode('mine')}
+                                className={`px-3 py-1 rounded transition-colors uppercase ${viewMode === 'mine' ? 'bg-phosphor-gold text-void-black font-bold' : 'text-telemetry-gray hover:text-white'}`}
+                            >
+                                {themeContent.myLogs}
+                            </button>
+                            <button 
+                                onClick={() => setViewMode('fleet')}
+                                className={`px-3 py-1 rounded transition-colors uppercase ${viewMode === 'fleet' ? 'bg-phosphor-gold text-void-black font-bold' : 'text-telemetry-gray hover:text-white'}`}
+                            >
+                                {themeContent.fleetFeed}
+                            </button>
+                        </div>
+
                         <div className="flex items-center gap-2 panel px-3 py-1.5">
                             <span className="text-telemetry-gray">TOTAL:</span>
                             <span className="text-phosphor-gold font-bold">{totalEntries}</span>
@@ -254,8 +273,8 @@ export default function Dashboard() {
                         <button onClick={() => setShowImport(true)} className="btn-ghost text-xs">
                             📥 IMPORT
                         </button>
-                        <Link href="/friends" className="btn-ghost text-xs">
-                            👥 FRIENDS
+                        <Link href="/friends" className="btn-ghost text-xs uppercase">
+                            👥 {themeContent.friendsHeader}
                         </Link>
                         <button onClick={handleLogout} className="btn-ghost text-xs">
                             LOGOUT
@@ -263,53 +282,54 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Filter Bar - Now includes Theme Selector */}
-                <div className="max-w-7xl mx-auto px-6 py-3 bg-console-dark/50 flex flex-wrap items-center gap-4">
-                    <span className="font-mono text-[10px] text-telemetry-gray uppercase tracking-widest">
-                        {themeContent.filterLabel}:
-                    </span>
-                    {['All', 'Movie', 'Series', 'Anime'].map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => setFilter(cat)}
-                            className={`btn-ghost text-xs ${filter === cat ? 'active' : ''}`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-
-                    <span className="font-mono text-[10px] text-telemetry-gray uppercase tracking-widest ml-4">
-                        Sort:
-                    </span>
-                    <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="btn-ghost text-xs bg-transparent"
-                    >
-                        <option value="newest">Newest First</option>
-                        <option value="oldest">Oldest First</option>
-                        <option value="rating-high">Rating (High)</option>
-                        <option value="rating-low">Rating (Low)</option>
-                        <option value="title-az">Title A-Z</option>
-                        <option value="title-za">Title Z-A</option>
-                    </select>
-
-                    {/* THEME SELECTOR - In filter bar like watchlog.html */}
-                    <span className="font-mono text-[10px] text-telemetry-gray uppercase tracking-widest ml-4">
-                        Theme:
-                    </span>
-                    <select
-                        value={currentTheme}
-                        onChange={handleThemeChange}
-                        className="btn-ghost text-xs bg-transparent theme-select"
-                    >
-                        {THEMES.map(theme => (
-                            <option key={theme.id} value={theme.id}>
-                                {theme.name}
-                            </option>
+                {/* Filter Bar (Only show in "My Logs" mode) */}
+                {viewMode === 'mine' && (
+                    <div className="max-w-7xl mx-auto px-6 py-3 bg-console-dark/50 flex flex-wrap items-center gap-4">
+                        <span className="font-mono text-[10px] text-telemetry-gray uppercase tracking-widest">
+                            {themeContent.filterLabel}:
+                        </span>
+                        {['All', 'Movie', 'Series', 'Anime'].map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => setFilter(cat)}
+                                className={`btn-ghost text-xs ${filter === cat ? 'active' : ''}`}
+                            >
+                                {cat}
+                            </button>
                         ))}
-                    </select>
-                </div>
+
+                        <span className="font-mono text-[10px] text-telemetry-gray uppercase tracking-widest ml-4">
+                            Sort:
+                        </span>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="btn-ghost text-xs bg-transparent"
+                        >
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="rating-high">Rating (High)</option>
+                            <option value="rating-low">Rating (Low)</option>
+                            <option value="title-az">Title A-Z</option>
+                            <option value="title-za">Title Z-A</option>
+                        </select>
+
+                        <span className="font-mono text-[10px] text-telemetry-gray uppercase tracking-widest ml-4">
+                            Theme:
+                        </span>
+                        <select
+                            value={currentTheme}
+                            onChange={handleThemeChange}
+                            className="text-xs bg-transparent theme-select outline-none font-mono uppercase text-phosphor-gold cursor-pointer"
+                        >
+                            {THEMES.map(theme => (
+                                <option key={theme.id} value={theme.id} className="bg-console-dark text-data-white">
+                                    {theme.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </header>
 
             {/* Main Content */}
@@ -328,37 +348,44 @@ export default function Dashboard() {
                     />
                 </div>
 
-                {/* Right Column: Stats + Grid */}
+                {/* Right Column: View Mode Logic */}
                 <div className="space-y-6">
-                    {/* Stats Dashboard */}
-                    <StatsDashboard
-                        entries={entries}
-                        show={showStats}
-                        onToggle={() => setShowStats(!showStats)}
-                        title={themeContent.statsTitle}
-                    />
-
-                    {/* Mission Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        {filteredEntries.map(entry => (
-                            <MissionCard
-                                key={entry.id}
-                                entry={entry}
-                                onClick={() => setEditingEntry(entry)}
-                                onDelete={() => handleDeleteEntry(entry.id)}
+                    {viewMode === 'mine' ? (
+                        <>
+                            {/* Stats Dashboard */}
+                            <StatsDashboard
+                                entries={entries}
+                                show={showStats}
+                                onToggle={() => setShowStats(!showStats)}
+                                title={themeContent.statsTitle}
                             />
-                        ))}
-                        {filteredEntries.length === 0 && (
-                            <div className="col-span-full text-center py-16">
-                                <div className="text-4xl mb-4">🛸</div>
-                                <p className="font-mono text-sm text-telemetry-gray uppercase tracking-widest">
-                                    {currentTheme === 'art-deco' 
-                                        ? `No films in: ${filter}` 
-                                        : `No missions in sector: ${filter}`}
-                                </p>
+
+                            {/* Mission Grid */}
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                {filteredEntries.map(entry => (
+                                    <MissionCard
+                                        key={entry.id}
+                                        entry={entry}
+                                        onClick={() => setEditingEntry(entry)}
+                                        onDelete={() => handleDeleteEntry(entry.id)}
+                                    />
+                                ))}
+                                {filteredEntries.length === 0 && (
+                                    <div className="col-span-full text-center py-16">
+                                        <div className="text-4xl mb-4">🛸</div>
+                                        <p className="font-mono text-sm text-telemetry-gray uppercase tracking-widest">
+                                            {currentTheme === 'art-deco' 
+                                                ? `No films in: ${filter}` 
+                                                : `No missions in sector: ${filter}`}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+                        </>
+                    ) : (
+                        // Fleet Feed Mode
+                        <ActivityFeed currentUser={user} />
+                    )}
                 </div>
             </main>
 
