@@ -11,6 +11,7 @@ import MissionCard from './MissionCard'
 import MissionForm from './MissionForm'
 import StatsDashboard from './StatsDashboard'
 import EditModal from './EditModal'
+import ImportModal from './ImportModal'
 
 const THEMES = [
     { id: 'cosmos', name: 'Cosmos Observatory' },
@@ -31,6 +32,7 @@ export default function Dashboard() {
     const [sortBy, setSortBy] = useState('newest')
     const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
     const [showStats, setShowStats] = useState(true)
+    const [showImport, setShowImport] = useState(false)
     const router = useRouter()
     const supabase = createClient()
 
@@ -133,6 +135,28 @@ export default function Dashboard() {
         }
     }
 
+    async function handleBatchImport(batch: any[]) {
+        if (!user) return
+        
+        // Add user_id to all entries
+        const records = batch.map(b => ({
+            ...b,
+            user_id: user.id
+        }))
+
+        // Supabase bulk insert
+        const { data, error } = await supabase
+            .from('entries')
+            .insert(records)
+            .select()
+
+        if (error) {
+            alert("Import partial failure: " + error.message)
+        } else if (data) {
+            setEntries([...data, ...entries])
+        }
+    }
+
     async function handleUpdateEntry(id: string, updates: Partial<Entry>) {
         const { error } = await supabase
             .from('entries')
@@ -227,6 +251,9 @@ export default function Dashboard() {
                             <div className="status-dot" />
                             <span className="text-telemetry-gray">{profile?.display_name || profile?.username || user.email?.split('@')[0] || 'PILOT'}</span>
                         </div>
+                        <button onClick={() => setShowImport(true)} className="btn-ghost text-xs">
+                            📥 IMPORT
+                        </button>
                         <Link href="/friends" className="btn-ghost text-xs">
                             👥 FRIENDS
                         </Link>
@@ -344,12 +371,19 @@ export default function Dashboard() {
                 </div>
             </footer>
 
-            {/* Edit Modal */}
+            {/* Modals */}
             {editingEntry && (
                 <EditModal
                     entry={editingEntry}
                     onSave={(updates) => handleUpdateEntry(editingEntry.id, updates)}
                     onClose={() => setEditingEntry(null)}
+                />
+            )}
+            
+            {showImport && (
+                <ImportModal
+                    onClose={() => setShowImport(false)}
+                    onImport={handleBatchImport}
                 />
             )}
         </div>
