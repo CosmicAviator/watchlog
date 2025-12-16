@@ -6,9 +6,10 @@ interface StatsDashboardProps {
     entries: Entry[]
     show: boolean
     onToggle: () => void
+    title: string
 }
 
-export default function StatsDashboard({ entries, show, onToggle }: StatsDashboardProps) {
+export default function StatsDashboard({ entries, show, onToggle, title }: StatsDashboardProps) {
     if (!entries.length) return null
 
     // Calculate stats
@@ -21,7 +22,7 @@ export default function StatsDashboard({ entries, show, onToggle }: StatsDashboa
     const fiveStars = entries.filter(e => e.score === 5).length
     const fourStars = entries.filter(e => (e.score || 0) >= 4 && (e.score || 0) < 5).length
     const threeStars = entries.filter(e => (e.score || 0) >= 3 && (e.score || 0) < 4).length
-    const lowStars = entries.filter(e => (e.score || 0) < 3).length
+    // const lowStars = entries.filter(e => (e.score || 0) < 3).length
 
     const topRated = [...entries].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 3)
 
@@ -38,7 +39,7 @@ export default function StatsDashboard({ entries, show, onToggle }: StatsDashboa
             <div className="panel-header flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <span>📊</span>
-                    Mission Statistics
+                    {title}
                 </div>
                 <button onClick={onToggle} className="text-telemetry-gray hover:text-data-white">
                     {show ? '▼' : '▶'}
