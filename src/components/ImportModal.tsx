@@ -35,13 +35,6 @@ export default function ImportModal({ onImport, onClose }: ImportModalProps) {
 
         return lines.slice(1).filter(l => l.trim()).map((line, idx) => {
             const values = parseLine(line)
-            const row: any = {}
-            
-            // Map common Letterboxd columns
-            // Name -> Title
-            // Year -> Year
-            // Rating -> Score
-            // Watched Date -> Date Finished
             
             const nameIdx = headers.indexOf('name')
             const dateIdx = headers.indexOf('watched date')
@@ -56,7 +49,7 @@ export default function ImportModal({ onImport, onClose }: ImportModalProps) {
                 category: 'Movie',
                 platform: 'Letterboxd Import'
             }
-        }).filter(Boolean)
+        }).filter((item): item is any => item !== null) // Explicit type check fix
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +60,7 @@ export default function ImportModal({ onImport, onClose }: ImportModalProps) {
             reader.onload = (evt) => {
                 const text = evt.target?.result as string
                 const data = parseCSV(text)
-                setPreview(data.slice(0, 5)) // Preview first 5
+                setPreview(data.slice(0, 5))
                 setProgress({ current: 0, total: data.length, status: 'Ready to import' })
             }
             reader.readAsText(f)
@@ -85,13 +78,15 @@ export default function ImportModal({ onImport, onClose }: ImportModalProps) {
             
             setProgress({ current: 0, total: allEntries.length, status: 'Starting...' })
 
-            // Process one by one to search TMDB
             const processedEntries = []
             for (let i = 0; i < allEntries.length; i++) {
                 const entry = allEntries[i]
+                
+                // SAFETY CHECK FOR TYPESCRIPT
+                if (!entry) continue 
+
                 setProgress({ current: i + 1, total: allEntries.length, status: `Fetching: ${entry.title}` })
                 
-                // Fetch Metadata
                 try {
                     const res = await fetch(`/api/tmdb/search?query=${encodeURIComponent(entry.title)}&type=movie`)
                     const data = await res.json()
@@ -100,7 +95,7 @@ export default function ImportModal({ onImport, onClose }: ImportModalProps) {
                         const top = data.results[0]
                         entry.poster_url = top.poster_url
                         entry.tmdb_id = top.id
-                        entry.title = top.title // Correct spelling
+                        entry.title = top.title 
                         entry.date_finished = entry.date_finished || top.year + '-01-01'
                     }
                 } catch (e) {
@@ -108,7 +103,6 @@ export default function ImportModal({ onImport, onClose }: ImportModalProps) {
                 }
 
                 processedEntries.push(entry)
-                // Small delay to be nice to API
                 await new Promise(r => setTimeout(r, 200))
             }
 
