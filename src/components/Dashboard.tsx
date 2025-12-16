@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-browser'
 import type { Entry, Profile } from '@/lib/types'
+import { THEME_CONTENT } from '@/lib/constants'
 import type { User } from '@supabase/supabase-js'
 import MissionCard from './MissionCard'
 import MissionForm from './MissionForm'
@@ -33,6 +34,9 @@ export default function Dashboard() {
     const router = useRouter()
     const supabase = createClient()
 
+    // Derived theme content
+    const themeContent = THEME_CONTENT[currentTheme] || THEME_CONTENT['cosmos']
+
     // Initialize theme from localStorage on mount
     useEffect(() => {
         const savedTheme = localStorage.getItem('watchlog-theme') || 'cosmos'
@@ -44,7 +48,7 @@ export default function Dashboard() {
         const initDashboard = async () => {
             console.log("Initializing dashboard...")
             const { data: { user }, error: authError } = await supabase.auth.getUser()
-
+            
             if (authError || !user) {
                 console.log("No user found, redirecting...")
                 router.push('/auth/login')
@@ -59,7 +63,7 @@ export default function Dashboard() {
                 .select('*')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
-
+            
             if (entriesError) console.error("Error fetching entries:", entriesError)
             if (userEntries) setEntries(userEntries)
 
@@ -69,7 +73,7 @@ export default function Dashboard() {
                 .select('*')
                 .eq('id', user.id)
                 .single()
-
+            
             if (userProfile) {
                 setProfile(userProfile)
                 // Use profile theme if set, otherwise use localStorage
@@ -79,7 +83,7 @@ export default function Dashboard() {
                     localStorage.setItem('watchlog-theme', userProfile.theme_id)
                 }
             }
-
+            
             setLoading(false)
         }
 
@@ -194,7 +198,7 @@ export default function Dashboard() {
         : '0.0'
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen flex flex-col">
             {/* Header */}
             <header className="border-b border-grid-line bg-void-black/80 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -202,9 +206,9 @@ export default function Dashboard() {
                     <div className="flex items-center gap-3">
                         <div className="w-1 h-8 bg-phosphor-gold rounded-sm" style={{ boxShadow: '0 0 10px var(--phosphor-gold)' }} />
                         <div>
-                            <h1 className="text-xl font-bold font-display">WATCHLOG</h1>
+                            <h1 className="text-xl font-bold font-display">{themeContent.appTitle}</h1>
                             <p className="font-mono text-[10px] text-telemetry-gray uppercase tracking-[0.2em]">
-                                Flight Log System
+                                {themeContent.appSubtitle}
                             </p>
                         </div>
                     </div>
@@ -235,7 +239,7 @@ export default function Dashboard() {
                 {/* Filter Bar - Now includes Theme Selector */}
                 <div className="max-w-7xl mx-auto px-6 py-3 bg-console-dark/50 flex flex-wrap items-center gap-4">
                     <span className="font-mono text-[10px] text-telemetry-gray uppercase tracking-widest">
-                        Filter:
+                        {themeContent.filterLabel}:
                     </span>
                     {['All', 'Movie', 'Series', 'Anime'].map(cat => (
                         <button
@@ -282,7 +286,7 @@ export default function Dashboard() {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+            <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 flex-1 w-full">
                 {/* Left Column: Form */}
                 <div className="space-y-6">
                     {error && (
@@ -290,8 +294,11 @@ export default function Dashboard() {
                             ERROR: {error}
                         </div>
                     )}
-
-                    <MissionForm onSubmit={handleAddEntry} />
+                    
+                    <MissionForm 
+                        onSubmit={handleAddEntry} 
+                        themeContent={themeContent}
+                    />
                 </div>
 
                 {/* Right Column: Stats + Grid */}
@@ -301,6 +308,7 @@ export default function Dashboard() {
                         entries={entries}
                         show={showStats}
                         onToggle={() => setShowStats(!showStats)}
+                        title={themeContent.statsTitle}
                     />
 
                     {/* Mission Grid */}
@@ -317,13 +325,24 @@ export default function Dashboard() {
                             <div className="col-span-full text-center py-16">
                                 <div className="text-4xl mb-4">🛸</div>
                                 <p className="font-mono text-sm text-telemetry-gray uppercase tracking-widest">
-                                    No missions in sector: {filter}
+                                    {currentTheme === 'art-deco' 
+                                        ? `No films in: ${filter}` 
+                                        : `No missions in sector: ${filter}`}
                                 </p>
                             </div>
                         )}
                     </div>
                 </div>
             </main>
+
+            {/* Footer */}
+            <footer className="border-t border-grid-line bg-console-dark/50 py-8 mt-auto">
+                <div className="max-w-7xl mx-auto px-6 text-center">
+                    <p className="font-mono text-[10px] text-telemetry-gray uppercase tracking-widest">
+                        {themeContent.footerText}
+                    </p>
+                </div>
+            </footer>
 
             {/* Edit Modal */}
             {editingEntry && (
