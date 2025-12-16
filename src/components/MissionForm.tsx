@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import type { Entry } from '@/lib/types'
+import type { Entry, ThemeContent } from '@/lib/types'
 
 interface MissionFormProps {
     onSubmit: (entry: Omit<Entry, 'id' | 'user_id' | 'created_at'>) => void
+    themeContent: ThemeContent
 }
 
 interface TMDBResult {
@@ -14,7 +15,7 @@ interface TMDBResult {
     poster_url: string | null
 }
 
-export default function MissionForm({ onSubmit }: MissionFormProps) {
+export default function MissionForm({ onSubmit, themeContent }: MissionFormProps) {
     const [title, setTitle] = useState('')
     const [category, setCategory] = useState('Movie')
     const [platform, setPlatform] = useState('')
@@ -22,7 +23,7 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
     const [dateFinished, setDateFinished] = useState(new Date().toISOString().split('T')[0])
     const [posterUrl, setPosterUrl] = useState('')
     const [loading, setLoading] = useState(false)
-
+    
     // TMDB state
     const [searchResults, setSearchResults] = useState<TMDBResult[]>([])
     const [searching, setSearching] = useState(false)
@@ -41,7 +42,7 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
             const type = category === 'Series' || category === 'Anime' ? 'tv' : 'movie'
             const response = await fetch(`/api/tmdb/search?query=${encodeURIComponent(query)}&type=${type}`)
             const data = await response.json()
-
+            
             if (data.results) {
                 setSearchResults(data.results)
                 setShowResults(true)
@@ -93,7 +94,7 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
         <div className="panel sticky top-[140px]">
             <div className="panel-header flex items-center gap-2">
                 <div className="status-dot" style={{ background: 'var(--phosphor-gold)' }} />
-                New Mission Entry
+                {themeContent.newEntry}
             </div>
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
                 {/* Title with TMDB search */}
@@ -121,7 +122,7 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
                             </div>
                         )}
                     </div>
-
+                    
                     {/* TMDB Results Dropdown */}
                     {showResults && searchResults.length > 0 && (
                         <div className="absolute z-50 w-full mt-1 bg-console-dark border border-grid-line rounded-lg overflow-hidden shadow-lg max-h-64 overflow-y-auto">
@@ -133,8 +134,8 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
                                     className="w-full flex items-center gap-3 p-2 hover:bg-phosphor-gold-dim text-left transition-colors"
                                 >
                                     {result.poster_url ? (
-                                        <img
-                                            src={result.poster_url}
+                                        <img 
+                                            src={result.poster_url} 
                                             alt={result.title}
                                             className="w-10 h-14 object-cover rounded"
                                         />
@@ -156,14 +157,14 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
                 {/* Show selected poster preview */}
                 {posterUrl && (
                     <div className="flex items-center gap-3 p-2 bg-void-black rounded border border-grid-line">
-                        <img
-                            src={posterUrl}
+                        <img 
+                            src={posterUrl} 
                             alt="Poster preview"
                             className="w-12 h-18 object-cover rounded"
                         />
                         <div className="flex-1 min-w-0">
                             <div className="text-xs text-status-green font-mono">POSTER FOUND</div>
-                            <button
+                            <button 
                                 type="button"
                                 onClick={() => setPosterUrl('')}
                                 className="text-xs text-telemetry-gray hover:text-alert-red"
@@ -177,7 +178,7 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
                 {/* Category */}
                 <div>
                     <label className="block font-mono text-[10px] text-telemetry-gray uppercase tracking-wider mb-2">
-                        Mission Type
+                        {themeContent.categoryLabel}
                     </label>
                     <div className="flex gap-2">
                         {['Movie', 'Series', 'Anime'].map(cat => (
@@ -200,7 +201,7 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
                 {/* Platform */}
                 <div>
                     <label className="block font-mono text-[10px] text-telemetry-gray uppercase tracking-wider mb-2">
-                        Platform
+                        {themeContent.platformLabel}
                     </label>
                     <input
                         type="text"
@@ -214,7 +215,7 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
                 {/* Rating */}
                 <div>
                     <label className="block font-mono text-[10px] text-telemetry-gray uppercase tracking-wider mb-2">
-                        Rating: <span className="text-phosphor-gold font-bold">{score}</span>/5
+                        {themeContent.ratingLabel}: <span className="text-phosphor-gold font-bold">{score}</span>/5
                     </label>
                     <input
                         type="range"
@@ -236,7 +237,7 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
                 {/* Date */}
                 <div>
                     <label className="block font-mono text-[10px] text-telemetry-gray uppercase tracking-wider mb-2">
-                        Completion Date
+                        {themeContent.dateLabel}
                     </label>
                     <input
                         type="date"
@@ -272,7 +273,10 @@ export default function MissionForm({ onSubmit }: MissionFormProps) {
                             Logging...
                         </>
                     ) : (
-                        <>▶ LOG MISSION</>
+                        <>
+                            <span className="font-sans font-bold text-base">{themeContent.submitIcon}</span>
+                            {themeContent.submitText}
+                        </>
                     )}
                 </button>
             </form>
