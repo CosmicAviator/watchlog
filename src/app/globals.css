@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════
+   WATCHLOG - COSMOS OBSERVATORY DESIGN SYSTEM
+   Retro-Futurism Theme v1.0
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+    --void-black: #0a0a0f;
+    --console-dark: #13131a;
+    --grid-line: #252532;
+    --telemetry-gray: #7a7a8c;
+    --data-white: #e8e4dc;
+    --phosphor-gold: #c9a227;
+    --phosphor-gold-dim: rgba(201, 162, 39, 0.15);
+    --phosphor-gold-glow: rgba(201, 162, 39, 0.4);
+    --observatory-teal: #4a9a8c;
+    --status-green: #5d8a66;
+    --alert-red: #c45c5c;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--void-black);
+    color: var(--data-white);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+/* Panel */
+.panel {
+    background: var(--console-dark);
+    border: 1px solid var(--grid-line);
+    border-radius: 8px;
+}
+
+.panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--grid-line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--phosphor-gold);
+}
+
+/* Button Primary */
+.btn-primary {
+    background: var(--phosphor-gold);
+    color: var(--void-black);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: #d4b84a;
+    box-shadow: 0 0 20px var(--phosphor-gold-glow);
+}
+
+/* Button Ghost */
+.btn-ghost {
+    background: transparent;
+    border: 1px solid var(--grid-line);
+    color: var(--telemetry-gray);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-ghost:hover {
+    color: var(--phosphor-gold);
+    border-color: var(--phosphor-gold);
+}
+
+.btn-ghost.active {
+    color: var(--phosphor-gold);
+    border-color: var(--phosphor-gold);
+    background: var(--phosphor-gold-dim);
+}
+
+/* Input Field */
+.input-field {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--void-black);
+    border: 1px solid var(--grid-line);
+    border-radius: 4px;
+    color: var(--data-white);
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--phosphor-gold);
+    box-shadow: 0 0 0 2px var(--phosphor-gold-dim);
+}
+
+/* Status Dot */
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--status-green);
+    box-shadow: 0 0 8px var(--status-green);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Mission Card */
+.mission-card {
+    background: var(--console-dark);
+    border: 1px solid var(--grid-line);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.mission-card:hover {
+    border-color: var(--phosphor-gold-glow);
+    box-shadow: 0 0 20px var(--phosphor-gold-dim);
+    transform: translateY(-2px);
+}
+
+/* Orbital Loader */
+.orbital-loader {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--grid-line);
+    border-top-color: var(--phosphor-gold);
+    border-radius: 50%;
+    animation: orbit 1s linear infinite;
+}
+
+@keyframes orbit {
+    to {
+        transform: rotate(360deg);
+    }
+}
