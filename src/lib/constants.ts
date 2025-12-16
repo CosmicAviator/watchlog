@@ -1,3 +1,5 @@
+import { ThemeContent } from './types'
+
 export const THEME_CONTENT: Record<string, ThemeContent> = {
     'cosmos': {
         appTitle: 'WATCHLOG',
