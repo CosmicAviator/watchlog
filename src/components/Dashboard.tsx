@@ -10,7 +10,13 @@ import MissionCard from './MissionCard'
 import MissionForm from './MissionForm'
 import StatsDashboard from './StatsDashboard'
 import EditModal from './EditModal'
-import ThemeSelector from './ThemeSelector'
+
+const THEMES = [
+    { id: 'cosmos', name: 'Cosmos Observatory' },
+    { id: 'art-deco', name: 'Art Deco' },
+    { id: 'sakura', name: 'Sakura' },
+    { id: 'neural', name: 'Neural' },
+]
 
 export default function Dashboard() {
     const [user, setUser] = useState<User | null>(null)
@@ -27,11 +33,18 @@ export default function Dashboard() {
     const router = useRouter()
     const supabase = createClient()
 
+    // Initialize theme from localStorage on mount
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('watchlog-theme') || 'cosmos'
+        setCurrentTheme(savedTheme)
+        document.documentElement.setAttribute('data-theme', savedTheme)
+    }, [])
+
     useEffect(() => {
         const initDashboard = async () => {
             console.log("Initializing dashboard...")
             const { data: { user }, error: authError } = await supabase.auth.getUser()
-            
+
             if (authError || !user) {
                 console.log("No user found, redirecting...")
                 router.push('/auth/login')
@@ -46,34 +59,46 @@ export default function Dashboard() {
                 .select('*')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
-            
+
             if (entriesError) console.error("Error fetching entries:", entriesError)
             if (userEntries) setEntries(userEntries)
 
             // Fetch profile
-            const { data: userProfile, error: profileError } = await supabase
+            const { data: userProfile } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
                 .single()
-            
+
             if (userProfile) {
                 setProfile(userProfile)
-                if (userProfile.theme_id) {
+                // Use profile theme if set, otherwise use localStorage
+                if (userProfile.theme_id && userProfile.theme_id !== currentTheme) {
                     setCurrentTheme(userProfile.theme_id)
                     document.documentElement.setAttribute('data-theme', userProfile.theme_id)
+                    localStorage.setItem('watchlog-theme', userProfile.theme_id)
                 }
             }
-            
+
             setLoading(false)
         }
 
         initDashboard()
     }, [router, supabase])
 
-    const handleThemeChange = (newTheme: string) => {
+    const handleThemeChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newTheme = e.target.value
         setCurrentTheme(newTheme)
         document.documentElement.setAttribute('data-theme', newTheme)
+        localStorage.setItem('watchlog-theme', newTheme)
+
+        // Persist to DB if user is logged in
+        if (user) {
+            await supabase
+                .from('profiles')
+                .update({ theme_id: newTheme })
+                .eq('id', user.id)
+        }
     }
 
     async function handleLogout() {
@@ -173,13 +198,13 @@ export default function Dashboard() {
             {/* Header */}
             <header className="border-b border-grid-line bg-void-black/80 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                    {/* Logo & Theme Info */}
+                    {/* Logo */}
                     <div className="flex items-center gap-3">
-                        <div className="w-2 h-8 bg-phosphor-gold rounded-sm shadow-[0_0_10px_rgba(201,162,39,0.5)]" />
+                        <div className="w-1 h-8 bg-phosphor-gold rounded-sm" style={{ boxShadow: '0 0 10px var(--phosphor-gold)' }} />
                         <div>
                             <h1 className="text-xl font-bold font-display">WATCHLOG</h1>
                             <p className="font-mono text-[10px] text-telemetry-gray uppercase tracking-[0.2em]">
-                                System: {currentTheme}
+                                Flight Log System
                             </p>
                         </div>
                     </div>
@@ -207,7 +232,7 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Filter Bar */}
+                {/* Filter Bar - Now includes Theme Selector */}
                 <div className="max-w-7xl mx-auto px-6 py-3 bg-console-dark/50 flex flex-wrap items-center gap-4">
                     <span className="font-mono text-[10px] text-telemetry-gray uppercase tracking-widest">
                         Filter:
@@ -230,33 +255,43 @@ export default function Dashboard() {
                         onChange={(e) => setSortBy(e.target.value)}
                         className="btn-ghost text-xs bg-transparent"
                     >
-                        <option value="newest">Newest</option>
-                        <option value="oldest">Oldest</option>
-                        <option value="rating-high">Rating ↓</option>
-                        <option value="rating-low">Rating ↑</option>
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="rating-high">Rating (High)</option>
+                        <option value="rating-low">Rating (Low)</option>
                         <option value="title-az">Title A-Z</option>
                         <option value="title-za">Title Z-A</option>
+                    </select>
+
+                    {/* THEME SELECTOR - In filter bar like watchlog.html */}
+                    <span className="font-mono text-[10px] text-telemetry-gray uppercase tracking-widest ml-4">
+                        Theme:
+                    </span>
+                    <select
+                        value={currentTheme}
+                        onChange={handleThemeChange}
+                        className="btn-ghost text-xs bg-transparent theme-select"
+                    >
+                        {THEMES.map(theme => (
+                            <option key={theme.id} value={theme.id}>
+                                {theme.name}
+                            </option>
+                        ))}
                     </select>
                 </div>
             </header>
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-                {/* Left Column: Form & Settings */}
+                {/* Left Column: Form */}
                 <div className="space-y-6">
                     {error && (
                         <div className="bg-alert-red/20 border border-alert-red text-alert-red p-3 rounded text-sm break-words">
                             ERROR: {error}
                         </div>
                     )}
-                    
+
                     <MissionForm onSubmit={handleAddEntry} />
-                    
-                    <ThemeSelector 
-                        currentTheme={currentTheme}
-                        onThemeChange={handleThemeChange}
-                        user_id={user.id}
-                    />
                 </div>
 
                 {/* Right Column: Stats + Grid */}
