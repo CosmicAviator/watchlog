@@ -14,6 +14,19 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
+            <head>
+                <script dangerouslySetInnerHTML={{
+                    __html: `
+                        (function() {
+                            try {
+                                var savedTheme = localStorage.getItem('watchlog-theme');
+                                var theme = savedTheme || 'cosmos';
+                                document.documentElement.setAttribute('data-theme', theme);
+                            } catch (e) {}
+                        })()
+                    `
+                }} />
+            </head>
             <body>{children}</body>
         </html>
     )
