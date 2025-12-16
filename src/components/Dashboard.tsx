@@ -11,14 +11,12 @@ import MissionForm from './MissionForm'
 import StatsDashboard from './StatsDashboard'
 import EditModal from './EditModal'
 
-interface DashboardProps {
-    user: User
-    entries: Entry[]
-    profile: Profile | null
-}
+export default function Dashboard() {
+    const [user, setUser] = useState<User | null>(null)
+    const [entries, setEntries] = useState<Entry[]>([])
+    const [profile, setProfile] = useState<Profile | null>(null)
+    const [loading, setLoading] = useState(true)
 
-export default function Dashboard({ user, entries: initialEntries, profile }: DashboardProps) {
-    const [entries, setEntries] = useState<Entry[]>(initialEntries)
     const [filter, setFilter] = useState('All')
     const [sortBy, setSortBy] = useState('newest')
     const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
@@ -26,12 +24,51 @@ export default function Dashboard({ user, entries: initialEntries, profile }: Da
     const router = useRouter()
     const supabase = createClient()
 
+    useEffect(() => {
+        const initDashboard = async () => {
+            console.log("Initializing dashboard...")
+            const { data: { user }, error: authError } = await supabase.auth.getUser()
+            
+            if (authError || !user) {
+                console.log("No user found, redirecting...")
+                router.push('/auth/login')
+                return
+            }
+
+            setUser(user)
+
+            // Fetch entries
+            const { data: userEntries } = await supabase
+                .from('entries')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+            
+            if (userEntries) setEntries(userEntries)
+
+            // Fetch profile
+            const { data: userProfile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single()
+            
+            if (userProfile) setProfile(userProfile)
+            
+            setLoading(false)
+        }
+
+        initDashboard()
+    }, [router, supabase])
+
     async function handleLogout() {
         await supabase.auth.signOut()
         router.push('/')
     }
 
     async function handleAddEntry(newEntry: Omit<Entry, 'id' | 'user_id' | 'created_at'>) {
+        if (!user) return
+
         const { data, error } = await supabase
             .from('entries')
             .insert({ ...newEntry, user_id: user.id })
@@ -65,6 +102,21 @@ export default function Dashboard({ user, entries: initialEntries, profile }: Da
             setEntries(entries.filter(e => e.id !== id))
         }
     }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="orbital-loader" />
+                    <p className="font-mono text-xs text-telemetry-gray uppercase tracking-widest">
+                        Initializing Mission Control...
+                    </p>
+                </div>
+            </div>
+        )
+    }
+
+    if (!user) return null
 
     // Filter and sort
     const filteredEntries = entries
@@ -114,7 +166,7 @@ export default function Dashboard({ user, entries: initialEntries, profile }: Da
                         </div>
                         <div className="flex items-center gap-2 panel px-3 py-1.5">
                             <div className="status-dot" />
-                            <span className="text-telemetry-gray">{profile?.display_name || profile?.username || 'PILOT'}</span>
+                            <span className="text-telemetry-gray">{profile?.display_name || profile?.username || user.email?.split('@')[0] || 'PILOT'}</span>
                         </div>
                         <Link href="/friends" className="btn-ghost text-xs">
                             👥 FRIENDS
