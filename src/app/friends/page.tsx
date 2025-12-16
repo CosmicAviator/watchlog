@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-browser'
 import { Profile, Friend } from '@/lib/types'
+import { THEME_CONTENT } from '@/lib/constants'
 import AddFriendModal from '@/components/friends/AddFriendModal'
 import FriendRequestCard from '@/components/friends/FriendRequestCard'
 import FriendCard from '@/components/friends/FriendCard'
@@ -25,10 +26,17 @@ export default function FriendsPage() {
     const [outgoingRequests, setOutgoingRequests] = useState<(Friend & { recipient: Profile })[]>([])
     const [loading, setLoading] = useState(true)
     const [showAddModal, setShowAddModal] = useState(false)
+    const [currentTheme, setCurrentTheme] = useState('cosmos') // Default
     const router = useRouter()
     const supabase = createClient()
 
+    // Derived theme content
+    const themeContent = THEME_CONTENT[currentTheme] || THEME_CONTENT['cosmos']
+
     useEffect(() => {
+        // Load theme immediately
+        const savedTheme = localStorage.getItem('watchlog-theme') || 'cosmos'
+        setCurrentTheme(savedTheme)
         checkAuth()
     }, [])
 
@@ -142,7 +150,7 @@ export default function FriendsPage() {
             <header className="mb-8">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Link href="/dashboard" className="text-telemetry-gray hover:text-data-white">
+                        <Link href="/" className="text-telemetry-gray hover:text-data-white">
                             ← Back to Dashboard
                         </Link>
                     </div>
@@ -152,9 +160,10 @@ export default function FriendsPage() {
                     <div className="flex items-center gap-3">
                         <div className="w-2 h-10 bg-observatory-teal rounded-sm shadow-[0_0_10px_rgba(42,157,143,0.5)]" />
                         <div>
-                            <h1 className="text-2xl font-bold font-display">CREW ROSTER</h1>
+                            {/* DYNAMIC TEXT HERE */}
+                            <h1 className="text-2xl font-bold font-display uppercase">{themeContent.friendsHeader}</h1>
                             <p className="font-mono text-[10px] text-telemetry-gray uppercase tracking-[0.2em]">
-                                Friend Management
+                                {currentTheme === 'art-deco' ? 'Society Members' : 'Friend Management'}
                             </p>
                         </div>
                     </div>
@@ -163,7 +172,7 @@ export default function FriendsPage() {
                         onClick={() => setShowAddModal(true)}
                         className="btn-primary"
                     >
-                        + Add Friend
+                        {themeContent.addFriend}
                     </button>
                 </div>
             </header>
@@ -201,22 +210,22 @@ export default function FriendsPage() {
                 <div className="panel lg:col-span-2">
                     <div className="panel-header flex items-center gap-2">
                         <div className="status-dot" style={{ background: 'var(--status-green)' }} />
-                        Friends
+                        {themeContent.friendsHeader}
                         <span className="ml-auto text-telemetry-gray text-xs">
-                            {friends.length} crew members
+                            {friends.length} found
                         </span>
                     </div>
                     <div className="p-4 space-y-3">
                         {friends.length === 0 ? (
                             <div className="text-center py-8">
                                 <p className="text-telemetry-gray mb-4">
-                                    No friends yet. Start building your crew!
+                                    No friends yet.
                                 </p>
                                 <button
                                     onClick={() => setShowAddModal(true)}
                                     className="btn-primary"
                                 >
-                                    + Add Your First Friend
+                                    {themeContent.addFriend}
                                 </button>
                             </div>
                         ) : (
