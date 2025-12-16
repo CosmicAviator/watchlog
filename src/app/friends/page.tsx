@@ -150,7 +150,7 @@ export default function FriendsPage() {
             <header className="mb-8">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Link href="/" className="text-telemetry-gray hover:text-data-white">
+                        <Link href="/dashboard" className="text-telemetry-gray hover:text-data-white">
                             ← Back to Dashboard
                         </Link>
                     </div>
