@@ -127,3 +127,19 @@ export interface FriendRequest {
     created_at: string
 }
 
+
+export interface ThemeContent {
+    appTitle: string
+    appSubtitle: string
+    newEntry: string
+    categoryLabel: string
+    platformLabel: string
+    ratingLabel: string
+    dateLabel: string
+    submitText: string
+    submitIcon: string
+    itemStatus: string
+    statsTitle: string
+    filterLabel: string
+    footerText: string
+}
