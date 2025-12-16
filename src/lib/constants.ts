@@ -1,5 +1,3 @@
-import type { ThemeContent } from './types'
-
 export const THEME_CONTENT: Record<string, ThemeContent> = {
     'cosmos': {
         appTitle: 'WATCHLOG',
@@ -14,7 +12,11 @@ export const THEME_CONTENT: Record<string, ThemeContent> = {
         itemStatus: 'COMPLETE',
         statsTitle: 'Mission Statistics',
         filterLabel: 'Sector',
-        footerText: 'Every film is a flight. Every series is a mission. Log them all.'
+        footerText: 'Every film is a flight. Every series is a mission. Log them all.',
+        myLogs: 'MY LOGS',
+        fleetFeed: 'FLEET FEED',
+        friendsHeader: 'CREW ROSTER',
+        addFriend: '+ Add Recruit'
     },
     'art-deco': {
         appTitle: 'THE PICTURE HOUSE',
@@ -23,13 +25,17 @@ export const THEME_CONTENT: Record<string, ThemeContent> = {
         categoryLabel: 'Category',
         platformLabel: 'Venue',
         ratingLabel: 'Rating',
-        dateLabel: 'Date Viewed',
+        dateLabel: 'Date Screened',
         submitText: 'ADD TO COLLECTION',
         submitIcon: '+',
         itemStatus: 'SCREENED',
         statsTitle: 'Collection Statistics',
         filterLabel: 'Filter',
-        footerText: 'Where every picture tells a story worth preserving.'
+        footerText: 'Where every picture tells a story worth preserving.',
+        myLogs: 'MY COLLECTION',
+        fleetFeed: 'SOCIETY NEWS',
+        friendsHeader: 'MEMBERS LIST',
+        addFriend: '+ Invite Member'
     },
     'sakura': {
         appTitle: 'HANAMI',
@@ -42,9 +48,13 @@ export const THEME_CONTENT: Record<string, ThemeContent> = {
         submitText: 'RECORD',
         submitIcon: '*',
         itemStatus: 'VIEWED',
-        statsTitle: 'Collection',
+        statsTitle: 'Library',
         filterLabel: 'Filter',
-        footerText: 'To view the fleeting beauty of each story.'
+        footerText: 'To view the fleeting beauty of each story.',
+        myLogs: 'MY VIEWING',
+        fleetFeed: 'VILLAGE NEWS',
+        friendsHeader: 'FRIENDS',
+        addFriend: '+ Add Friend'
     },
     'neural': {
         appTitle: 'NEURAL',
@@ -59,6 +69,10 @@ export const THEME_CONTENT: Record<string, ThemeContent> = {
         itemStatus: 'SYNCED',
         statsTitle: 'Analytics',
         filterLabel: 'Query',
-        footerText: 'Every stream leaves a trace in the network.'
+        footerText: 'Every stream leaves a trace in the network.',
+        myLogs: 'LOCAL DATA',
+        fleetFeed: 'NETWORK FEED',
+        friendsHeader: 'NODE LIST',
+        addFriend: '+ Connect Node'
     }
 }
